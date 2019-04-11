@@ -1,0 +1,38 @@
+     1                                  section .data
+     2                                  
+     3                                  ; put your data in this section using
+     4                                  ; db , dw, dd directions
+     5                                  
+     6 00000000 05                      number db  5
+     7 00000001 01                      answer db  1    ;  1 means number is prime, 0 means number is not prime
+     8                                  section .bss
+     9                                  
+    10                                  ; put UNINITIALIZED data here using
+    11                                  
+    12                                  section .text
+    13                                          global _start
+    14                                  
+    15                                  _start:
+    16 00000000 BE[00000000]                   mov esi, number ; get the offset of number into esi
+    17 00000005 B800000000              keith: mov eax, 0      ; clear the entire eax register
+    18 0000000A 8A06                           mov al, [esi]   ; get the number from memory into al
+    19 0000000C 88C2                           mov dl, al      ; put it inside dl as well
+    20 0000000E B302                           mov bl, 2       ; bl holds each divisor starting from 2
+    21 00000010 F6F3                    loopy: div bl          ; ax / bl  with quot in al and rem in ah
+    22 00000012 662500FF                       and ax, 1111111100000000b   ;  isolate the rem in ah with a  AND mask
+    23                                                                     ; to determine whether the remainder is 0
+    24 00000016 FEC3                           inc bl          ; increment the divisor
+    25 00000018 88D0                           mov al, dl      ; restore the value held in al for the next loop
+    26 0000001A 38C3                           cmp bl, al      ; compare the divisor and the number
+    27 0000001C 7405                           je done         ; if they're the same we're done
+    28 0000001E 80FC00                         cmp ah, 0       ; check if remainder is zero
+    29 00000021 75ED                           jne loopy       ; if not we're not done and must try the next divisor
+    30 00000023 38D3                    done:  cmp bl, dl      ; check if we're done because its prime
+    31 00000025 C705[01000000]0000-            mov dword [answer], 0   ; assume the answer is not prime first
+    32 0000002D 0000               
+    33 0000002F 750A                           jne exit        ; if cmp shows they not the same, it's not prime
+    34 00000031 C705[01000000]0100-            mov dword [answer], 1   ; if we got here, they are the same, save 1 to answer
+    35 00000039 0000               
+    36 0000003B B801000000              exit:  mov eax, 1      ; call system exit
+    37 00000040 BB00000000                     mov ebx, 0      ; return code 0, no error
+    38 00000045 CD80                           int 80h
